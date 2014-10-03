@@ -3,7 +3,7 @@
 require('config.php');
 
 function createTable(){
-	
+
 	$sql=array(
 		"profile"=>"CREATE TABLE `profile`( 
 			`uid` int not null auto_increment, 
@@ -61,14 +61,40 @@ function createTable(){
 			`orderTime` timestamp default current_timestamp, 
 			`guestbook` text, `isPaid` int not null, 
 			`method` enum('online','offline'), 
-			primary key(`boid`) )default charset=utf8;");
+			primary key(`boid`) )default charset=utf8;",
+		"orderLog"=>"CREATE TABLE `orderLog`( 
+			`lid` int not null auto_increment, 
+			`uid` int not null, 
+			`oid` int not null, 
+			`otime` timestamp default current_timestamp, 
+			primary key(`lid`) )default charset=utf8;",
+		"orderForm"=>"CREATE TABLE `orderForm`( 
+			`fid` int not null auto_increment, 
+			`lid` int not null, 
+			`uidLaunch` int not null, 
+			`uidAccept` int not null, 
+			`createTime` timestamp default current_timestamp, 
+			primary key(`fid`) )default charset=utf8",
+		"msg"=>"CREATE TABLE msg( 
+			`mid` int NOT NULL AUTO_INCREMENT, 
+			`_from` int NOT NULL, 
+			`_to` int NOT NULL, 
+			`content` TEXT NOT NULL, 
+			`datetime` TEXT NOT NULL, 
+			`isread` enum('y','n') NOT NULL, 
+			PRIMARY KEY (`mid`) )DEFAULT CHARSET=utf8;",
+		"msgMonitor"=>"CREATE TABLE msgMonitor( 
+			`mmid` int not null auto_increment, 
+			`mid` int not null, 
+			primary key(`mmid`) )default charset=utf8;");
 
 	$pdo=new PDO("mysql:dbname=$dbname;host=$host",$user,$password);
 
-	$res=$pdo->exec($sql['supplier']);
-
-	if(!$res){
+	foreach ($sql as $key => $sqlStatement) {
+		$res=$pdo->exec($sqlStatement);
+		if(!$res){
 		print_r($pdo->errorInfo());
+		}
 	}
 
 }
