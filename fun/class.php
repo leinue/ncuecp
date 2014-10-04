@@ -17,11 +17,8 @@ require('config.php');
 */
 
 class EmailVerification{
-	protected $email;
 
-	function __construct($email){$this->email=$email;}
-
-	function getEmail(){return $this->email;}
+	function __construct(){}
 
 	function send(emailContentMgr $ecm){mail($ecm->getTo(),$ecm->getSubject(),$ecm->getMessage(),$ecm->getHeaders());}
 }
@@ -29,28 +26,34 @@ class EmailVerification{
 class emailContentMgr{
 	protected $subject;
 	protected $to;
-	protected $from;
 	protected $message;
 	protected $headers;
 
 	function __construct(
-		$subject,$to,$url,$from,$message,$headers){
+		$subject,$url,$to,$message,$headers){
 		$this->subject=$subject;
-		$this->to=$to;
-		$this->from=$from;
 		$this->message=$message;
 		$this->headers=$headers;
+		$this->to=$to;
 	}
 
 	function getSubject(){return $this->subject;}
-
-	function getTo(){return $this->to;}
 
 	function getFrom(){return $this->from;}
 
 	function getMessage(){return $this->message;}
 
 	function getHeaders(){return $this->headers;}
+
+	function getTo(){return $this->to;}
 }
+
+/*
+EmailVerification类使用示例
+$em=new emailContentMgr("感谢注册NCUECP","url","597055914@qq.com","message","from:xxxxx");
+$ev=new EmailVerification();
+$ev->send($em);
+*/
+
 
 ?>
