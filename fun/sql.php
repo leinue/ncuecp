@@ -93,7 +93,7 @@ function createTable(){
 	foreach ($sql as $key => $sqlStatement) {
 		$res=$pdo->exec($sqlStatement);
 		if(!$res){
-		print_r($pdo->errorInfo());
+			print_r($pdo->errorInfo());
 		}
 	}
 
