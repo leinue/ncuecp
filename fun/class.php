@@ -62,27 +62,30 @@ class pdoOperation{
 		if($stmt){
 			$stmt->execute($arr);
 			$row=$stmt->fetch();
-			if($row){
-				return $row[0];
-			}else{return false;}
+			return $row;
 		}else{return false;}
 	}
 }
 
 /**
 * Character verification
-* 用于检测用户输入的邮箱/密码/用户名等是否可法并且过滤掉一些HTML/SQL注入字符
+* 用于检测用户输入的邮箱/密码/用户名等是否合法并且过滤掉一些HTML/SQL注入字符
 */
-class characterVerification{
-	protected $data;
+class characterVerification extends pdoOperation{
 
-	function __construct($data){$this->data=$data;}
+	function test($data){
+		$data = trim($data);
+		$data = stripslashes($data);
+		$data = htmlspecialchars($data);
+		return $data;
+	}
 
-	function test(){
-		$this->data = trim($this->data);
-		$this->data = stripslashes($this->data);
-		$this->data = htmlspecialchars($this->data);
-		return $this->data;
+	function emailIsExist($email){
+		return $this->fetchOdd($this->loadEmail,array($email));
+	}
+
+	function isValid(){
+
 	}
 }
 
@@ -160,7 +163,8 @@ class emailContentMgr{
 
 /**
 * 注册用户类
-* reg()中数组参数$regInfo元素的顺序为:姓名,密码,邮箱,最后登录时间,最后登录IP
+* @reg()中数组参数$regInfo元素的顺序为:姓名,密码,邮箱,最后登录时间,最后登录IP
+* @reg()返回-1表示邮箱重复,返回-2表示邮箱不合法,返回-3表示密码不合法
 */
 class register extends pdoOperation{
 	
@@ -171,17 +175,20 @@ class register extends pdoOperation{
 		if(count($regInfo)!=3){
 			throw new Exception("array \$regInfo must contain three elements.", 1);
 		}
-		date_default_timezone_set("Etc/GMT+8");
-		$nowTime=date('Y-m-d H:i:s',time());
-		$uip=getIp();
-		$regInfo[]=$nowTime;
-		$regInfo[]=$uip;
-		return $this->submitQuery($this->addNewUser,$regInfo);
+
+		$cv=new characterVerification(self::$pdo);
+		if(!($cv->emailIsExist($cv->test($regInfo[2])))){
+			date_default_timezone_set("Etc/GMT+8");
+			$nowTime=date('Y-m-d H:i:s',time());
+			$uip=getIp();
+			$regInfo[]=$nowTime;
+			$regInfo[]=$uip;
+			return $this->submitQuery($this->addNewUser,$regInfo);
+		}else{
+			return -1;
+		}
 	}
 
-	function isValid(){
-		
-	}
 }
 
 try {
@@ -191,7 +198,9 @@ try {
 }
 
 $regin=new register($pdo);
-$regin->reg(array("233","123456","sassasa"));
+echo $regin->reg(array("233","123456","123@qq.com"));
 
+//$cv=new characterVerification($pdo);
+//print_r($cv->emailIsExist($cv->test("123@qq.com")));
 
 ?>
