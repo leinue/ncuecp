@@ -1,6 +1,7 @@
 <?php
 
 require('config.php');
+require('functions.php');
 
 /**
 * class pdoOperation
@@ -8,21 +9,28 @@ require('config.php');
 * @submitQuery()使用pdo的预处理语句进行查询,比较安全
 * @fetchClassQuery()返回对应数据库的class
 * @fetchOdd()返回单个值
-*
 */
 class pdoOperation{
 
 	public $emailCheck="UPDATE `profile` SET `isValid`=`1` WHERE `uid`=?";
+	public $forgotPassword="";
+	public $loadEmail="SELECT * FROM `profile` WHERE `email`=?";
+	public $changeEmail="UPDATE `profile` SET `email`=`?` WHERE `uid`=?";
+	public $addNewUser="INSERT INTO `profile`(`userName`, `password`, `email`, `isValid`, `lastLoginTime`, `ip`, `face`, `sex`, `university`, `college`, `flat`, `returnVisit`, `contact`) 
+	VALUES (?,SHA1(?),?,'0',?,?,'user/default.jpg','boy','南昌大学','南昌大学新闻与传播学院','000000','0','暂无')";
 
 	protected static $pdo;
 	
-	function __construct($pdo){$this->pdo=$pdo;}
+	function __construct($pdo){
+		self::$pdo=$pdo;
+		self::$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false); //禁用prepared statements的仿真效果
+	}
 
 	function submitQuery($sql,$arr){
 		if(!(is_array($arr))){
 			return false;
 		}
-		$stmt=$this->pdo->prepare($sql);
+		$stmt=self::$pdo->prepare($sql);
 		$result=$stmt->execute($arr);
 		return $result;
 	}
@@ -31,7 +39,7 @@ class pdoOperation{
 		if(!(is_array($arr))){
 			return false;
 		}
-		$stmt=$this->pdo->prepare($sql);
+		$stmt=self::$pdo->prepare($sql);
 		$res=$stmt->execute($arr);
 
 		$stmt->setFetchMode(PDO::FETCH_CLASS,$className);
@@ -49,7 +57,7 @@ class pdoOperation{
 		if(!(is_array($arr))){
 			return false;
 		}
-		$stmt=$this->pdo->prepare($sql);
+		$stmt=self::$pdo->prepare($sql);
 
 		if($stmt){
 			$stmt->execute($arr);
@@ -62,9 +70,28 @@ class pdoOperation{
 }
 
 /**
+* Character verification
+* 用于检测用户输入的邮箱/密码/用户名等是否可法并且过滤掉一些HTML/SQL注入字符
+*/
+class characterVerification{
+	protected $data;
+
+	function __construct($data){$this->data=$data;}
+
+	function test(){
+		$this->data = trim($this->data);
+		$this->data = stripslashes($this->data);
+		$this->data = htmlspecialchars($this->data);
+		return $this->data;
+	}
+}
+
+/**
 * class EmailVerification
 * 用于注册/忘记密码/改变邮箱时的邮箱验证
 * 使用组合模式设计
+* @verifyStart()验证注册
+* @verifyChange()改变邮箱
 * **************************************************************************************
 * 注册时的消息示例
 * $to = $this->email;
@@ -73,17 +100,30 @@ class pdoOperation{
 * $message = "<a href=\"".$reg_url."\">欢迎注册NCUECP,请点击这里进行激活帐号</a>";
 * $from = "someonelse@example.com";
 * $headers = "From: $from";
+* **************************************************************************************
+* EmailVerification类使用示例
+* $em=new emailContentMgr("感谢注册NCUECP","url","597055914@qq.com","message","from:xxxxx");
+* $ev=new EmailVerification();
+* $ev->send($em);
 */
 
 class EmailVerification{
+	protected $uid;
 
-	function __construct(){}
+	function __construct($uid){$this->uid=$uid;}
 
 	function send(emailContentMgr $ecm){
 		mail($ecm->getTo(),$ecm->getSubject(),$ecm->getMessage(),$ecm->getHeaders());}
 
-	function verify(pdoOperation $pdoo,$uid){
-		return $pdoo->submitQuery($pdoo->emailCheck,array($uid));
+	function verifyStart(pdoOperation $pdoo){
+		return $pdoo->submitQuery($pdoo->emailCheck,array($this->uid));}
+
+	function verifyPassword(){
+
+	}
+
+	function verifyChange(pdoOperation $pdoo,$newEmail){
+		return $pdoo->submitQuery($pdoo->changeEmail,array($newEmail,$this->uid));
 	}
 }
 
@@ -101,22 +141,57 @@ class emailContentMgr{
 		$this->to=$to;
 	}
 
-	function getSubject(){return $this->subject;}
+	function getSubject(){
+		return $this->subject;
+	}
 
 	function getFrom(){return $this->from;}
 
-	function getMessage(){return $this->message;}
+	function getMessage(){
+		return $this->message;
+	}
 
-	function getHeaders(){return $this->headers;}
+	function getHeaders(){
+		return $this->headers;
+	}
 
 	function getTo(){return $this->to;}
 }
 
-/*
-EmailVerification类使用示例
-$em=new emailContentMgr("感谢注册NCUECP","url","597055914@qq.com","message","from:xxxxx");
-$ev=new EmailVerification();
-$ev->send($em);
+/**
+* 注册用户类
+* reg()中数组参数$regInfo元素的顺序为:姓名,密码,邮箱,最后登录时间,最后登录IP
 */
+class register extends pdoOperation{
+	
+	function reg($regInfo){
+		if(!is_array($regInfo)){
+			throw new Exception("\$regInfo must be a array.", 1);
+		}
+		if(count($regInfo)!=3){
+			throw new Exception("array \$regInfo must contain three elements.", 1);
+		}
+		date_default_timezone_set("Etc/GMT+8");
+		$nowTime=date('Y-m-d H:i:s',time());
+		$uip=getIp();
+		$regInfo[]=$nowTime;
+		$regInfo[]=$uip;
+		return $this->submitQuery($this->addNewUser,$regInfo);
+	}
+
+	function isValid(){
+		
+	}
+}
+
+try {
+	$pdo=new PDO("mysql:dbname=$dbname;host=$host",$user,$password);
+} catch (PDOException $e) {
+	echo $e->getMessage();
+}
+
+$regin=new register($pdo);
+$regin->reg(array("233","123456","sassasa"));
+
 
 ?>
