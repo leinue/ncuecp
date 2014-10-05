@@ -85,7 +85,7 @@ class characterVerification extends pdoOperation{
 	}
 
 	function pwIsValid($pw){
-		strlen($pw)>16?return false:return true;}
+		return strlen($pw)<=16;}
 
 	function emailIsValid($email){
 		$eregp="^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$";
@@ -147,19 +147,13 @@ class emailContentMgr{
 		$this->to=$to;
 	}
 
-	function getSubject(){
-		return $this->subject;
-	}
+	function getSubject(){return $this->subject;}
 
 	function getFrom(){return $this->from;}
 
-	function getMessage(){
-		return $this->message;
-	}
+	function getMessage(){return $this->message;}
 
-	function getHeaders(){
-		return $this->headers;
-	}
+	function getHeaders(){return $this->headers;}
 
 	function getTo(){return $this->to;}
 }
@@ -181,8 +175,8 @@ class register extends pdoOperation{
 
 		$cv=new characterVerification(self::$pdo);
 		$fix=$cv->test($regInfo[2]);
-		if(!($cv->emailIsExist($fix))){
-			if($cv->emailIsValid($fix)){
+		if($cv->emailIsValid($fix)){
+			if(!($cv->emailIsExist($fix))){
 				if($cv->pwIsValid($regInfo[1])){
 					date_default_timezone_set("Etc/GMT+8");
 					$nowTime=date('Y-m-d H:i:s',time());
@@ -191,8 +185,8 @@ class register extends pdoOperation{
 					$regInfo[]=$uip;
 					return $this->submitQuery($this->addNewUser,$regInfo);
 				}else{return -3;}
-			}else{return -2;}
-		}else{return -1;}
+			}else{return -1;}
+		}else{return -2;}
 	}
 
 }
