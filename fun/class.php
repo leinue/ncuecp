@@ -84,8 +84,12 @@ class characterVerification extends pdoOperation{
 		return $this->fetchOdd($this->loadEmail,array($email));
 	}
 
-	function isValid(){
+	function pwIsValid($pw){
+		strlen($pw)>16?return false:return true;}
 
+	function emailIsValid($email){
+		$eregp="^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$";
+		return eregi($eregp,$email);
 	}
 }
 
@@ -126,8 +130,7 @@ class EmailVerification{
 	}
 
 	function verifyChange(pdoOperation $pdoo,$newEmail){
-		return $pdoo->submitQuery($pdoo->changeEmail,array($newEmail,$this->uid));
-	}
+		return $pdoo->submitQuery($pdoo->changeEmail,array($newEmail,$this->uid));}
 }
 
 class emailContentMgr{
@@ -177,16 +180,19 @@ class register extends pdoOperation{
 		}
 
 		$cv=new characterVerification(self::$pdo);
-		if(!($cv->emailIsExist($cv->test($regInfo[2])))){
-			date_default_timezone_set("Etc/GMT+8");
-			$nowTime=date('Y-m-d H:i:s',time());
-			$uip=getIp();
-			$regInfo[]=$nowTime;
-			$regInfo[]=$uip;
-			return $this->submitQuery($this->addNewUser,$regInfo);
-		}else{
-			return -1;
-		}
+		$fix=$cv->test($regInfo[2]);
+		if(!($cv->emailIsExist($fix))){
+			if($cv->emailIsValid($fix)){
+				if($cv->pwIsValid($regInfo[1])){
+					date_default_timezone_set("Etc/GMT+8");
+					$nowTime=date('Y-m-d H:i:s',time());
+					$uip=getIp();
+					$regInfo[]=$nowTime;
+					$regInfo[]=$uip;
+					return $this->submitQuery($this->addNewUser,$regInfo);
+				}else{return -3;}
+			}else{return -2;}
+		}else{return -1;}
 	}
 
 }
@@ -197,8 +203,8 @@ try {
 	echo $e->getMessage();
 }
 
-$regin=new register($pdo);
-echo $regin->reg(array("233","123456","123@qq.com"));
+//$regin=new register($pdo);
+//echo $regin->reg(array("233","123456","123@qq.com"));
 
 //$cv=new characterVerification($pdo);
 //print_r($cv->emailIsExist($cv->test("123@qq.com")));
