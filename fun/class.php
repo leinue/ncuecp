@@ -2,6 +2,7 @@
 
 require('config.php');
 require('functions.php');
+require('tableObj.php');
 
 /**
 * class pdoOperation
@@ -18,6 +19,7 @@ class pdoOperation{
 	public $changeEmail="UPDATE `profile` SET `email`=`?` WHERE `uid`=?";
 	public $addNewUser="INSERT INTO `profile`(`userName`, `password`, `email`, `isValid`, `lastLoginTime`, `ip`, `face`, `sex`, `university`, `college`, `flat`, `returnVisit`, `contact`) 
 	VALUES (?,SHA1(?),?,'0',?,?,'user/default.jpg','boy','南昌大学','南昌大学新闻与传播学院','000000','0','暂无')";
+	public $userEnter="SELECT * FROM `profile` WHERE `email`=? and `password`=SHA1(?)";
 
 	protected static $pdo;
 	
@@ -45,7 +47,7 @@ class pdoOperation{
 		$stmt->setFetchMode(PDO::FETCH_CLASS,$className);
 
 		if ($res) {
-			if($draft=$stmt->fetchAll()) {
+			if($draft=$stmt->fetch()) {
 				return $draft;
 			}else{
 				return false;}
@@ -81,8 +83,7 @@ class characterVerification extends pdoOperation{
 	}
 
 	function emailIsExist($email){
-		return $this->fetchOdd($this->loadEmail,array($email));
-	}
+		return $this->fetchOdd($this->loadEmail,array($email));}
 
 	function pwIsValid($pw){
 		return strlen($pw)<=16;}
@@ -160,14 +161,14 @@ class emailContentMgr{
 
 /**
 * 注册用户类
-* @reg()中数组参数$regInfo元素的顺序为:姓名,密码,邮箱,最后登录时间,最后登录IP
+* @reg()中数组参数$regInfo元素的顺序为:姓名,密码,邮箱
 * @reg()返回-1表示邮箱重复,返回-2表示邮箱不合法,返回-3表示密码不合法
 */
 class register extends pdoOperation{
 	
 	function reg($regInfo){
 		if(!is_array($regInfo)){
-			throw new Exception("\$regInfo must be a array.", 1);
+			throw new Exception("\$regInfo must be an array.", 1);
 		}
 		if(count($regInfo)!=3){
 			throw new Exception("array \$regInfo must contain three elements.", 1);
@@ -191,6 +192,24 @@ class register extends pdoOperation{
 
 }
 
+/**
+* 用户登录类 
+* @enter()在验证成功后返回包含用户信息的类
+* @enter()返回-1表示邮箱重复,返回-2表示邮箱不合法,返回-3表示密码不合法
+*/
+class login extends pdoOperation{
+	
+	function enter($email,$password){
+		$cv=new characterVerification(self::$pdo);
+		$fix=$cv->test($email);
+		if($cv->emailIsValid($fix)){
+			if($cv->pwIsValid($password)){
+				return $this->fetchClassQuery($this->userEnter,array($email,$password),'user');
+			}else{return -3;}
+		}else{return -2;}
+	}
+}
+
 try {
 	$pdo=new PDO("mysql:dbname=$dbname;host=$host",$user,$password);
 } catch (PDOException $e) {
@@ -203,4 +222,8 @@ try {
 //$cv=new characterVerification($pdo);
 //print_r($cv->emailIsExist($cv->test("123@qq.com")));
 
+$log=new login($pdo);
+if($a=$log->enter("123@qq.com","123456")){
+ echo $a->getUid();
+}
 ?>
