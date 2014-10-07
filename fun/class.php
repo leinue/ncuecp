@@ -99,7 +99,6 @@ class pdoOperation{
 	VALUES (?,SHA1(?),?,'0',?,?,'user/default.jpg','boy','南昌大学','南昌大学新闻与传播学院','000000','0','暂无')";
 	public $userEnter="SELECT * FROM `profile` WHERE `email`=? and `password`=SHA1(?)";
 	public $updateLoginInfo="UPDATE `profile` SET `lastLoginTime`=?,`ip`=concat(`ip`,?) WHERE `email`=?";
-	public $updateProfile="";
 	public $changePicture="UPDATE `profile` SET `face`=? WHERE `email`=?";
 	public $changePassword="UPDATE `profile` SET `password`=? WHERE `email`=?";
 	public $checkOldpw="SELECT `uid` FROM `profile` WHERE `email`=? AND `password`=SHA1(?)";
@@ -115,6 +114,10 @@ class pdoOperation{
 	public $delSupplier="DELETE FROM `supplier` WHERE `sid`=?";//sid=supplierID
 	public $acceptOrder="INSERT INTO `orderlog`(`uid`, `oid`) VALUES (?,?)";
 	public $unAcceptOrder="DELETE FROM `orderlog` WHERE `uid`=? and `oid`=?";
+	public $addBook="INSERT INTO `oldbooks`(`name`, `isbn`, `editor`, `publicTime`, `remarks`, `pic`, `price`) VALUES (?,?,?,?,?,?,?)";
+	public $delBook="DELETE FROM `oldbooks` WHERE `bid`=?";
+	public $orderBooks="INSERT INTO `booksorder`( `bid`, `purchaser`,`guestbook`, `isPaid`, `method`) VALUES (?,?,?,?,?)";//method只能有offline和online两种状态
+	public $undoOrderBooks="DELETE FROM `booksorder` WHERE `boid`=?";
 
 	protected static $pdo;
 	
