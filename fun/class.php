@@ -64,7 +64,7 @@ class uploadPic{
     		}
 
     		$pinfo=pathinfo($destination);
-    		$fname=$pinfo[basename];
+    		$fname=$pinfo["basename"];
 
     		/*$final_data=array(
       		"dest" => $destination_folder.$fname,
@@ -101,6 +101,9 @@ class pdoOperation{
 	public $updateLoginInfo="UPDATE `profile` SET `lastLoginTime`=?,`ip`=concat(`ip`,?) WHERE `email`=?";
 	public $updateProfile="";
 	public $changePicture="UPDATE `profile` SET `face`=? WHERE `email`=?";
+	public $changePassword="UPDATE `profile` SET `password`=? WHERE `email`=?";
+	public $checkOldpw="SELECT `uid` FROM `profile` WHERE `email`=? AND `password`=SHA1(?)";
+	public $editProfile="";
 
 	protected static $pdo;
 	
@@ -250,9 +253,11 @@ class register extends pdoOperation{
 	function reg($regInfo){
 		if(!is_array($regInfo)){
 			throw new Exception("\$regInfo must be an array.", 1);
+			return;
 		}
 		if(count($regInfo)!=3){
 			throw new Exception("array \$regInfo must contain three elements.", 1);
+			return;
 		}
 
 		$cv=new characterVerification(self::$pdo);
@@ -309,13 +314,46 @@ class login extends pdoOperation{
 
 /**
 * 个人资料管理类
+* 构造函数较之前有点不同,在填写pdo参数的同时还要填写邮箱
 * @changeHeas()用来修改头像,更换成功返回true,更换失败返回false
+* @changePassword()用来修改密码,成功返回true,失败返回false,旧密码与数据库不吻合返回-1
+* @checkOldpw()用来验证旧密码是否与数据库里的数据吻合,吻合返回true,不吻合返回false
 */
 class profileMgr extends pdoOperation{
-	
-	function changeHeas($pic,$email){
-		return $this->submitQuery($this->changePicture,array($pic,$email));
+
+	protected $email;
+
+	function __construct($email,$pdo){
+		$this->email=$email;
+		parent::$pdo=$pdo;
 	}
+	
+	function changeHeas($pic){
+		return $this->submitQuery($this->changePicture,array($pic,$this->email));}
+
+	function changePassword($oldpw,$newpw){
+		if($this->checkOldpw($oldpw)){
+			return $this->submitQuery($this->changePassword,array($newpw,$this->email));
+		}else{
+			return -1;
+		}
+	}
+
+	function checkOldpw($oldpw){
+		return $this->fetchOdd($this->checkOldpw,array($this->email,$oldpw));}
+
+	function editProfile($arr){
+		if(!is_array($arr)){
+			throw new Exception("parameter arr must be an array", 1);
+			return;
+		}
+		if(count($arr)!=6){
+			throw new Exception("parameter arr must contain 6 elements", 1);
+			return;
+		}
+		return $this->submitQuery($this->editProfile,$arr);
+	}
+
 }
 
 try {
@@ -333,6 +371,11 @@ try {
 /*$log=new login($pdo);
 if($a=$log->enter("123@qq.com","123456")){
 	echo $a->getUserName();
+}*/
+
+/*$pm=new profileMgr("123@qq.com",$pdo);
+if($pm->checkOldpw("123456")){
+	echo 'dsdssd';
 }*/
 
 ?>
