@@ -105,7 +105,7 @@ class pdoOperation{
 	public $checkOldpw="SELECT `uid` FROM `profile` WHERE `email`=? AND `password`=SHA1(?)";
 	public $editProfile="UPDATE `profile` SET `userName`=?,`sex`=?,`university`=?,`college`=?,`flat`=?,`contact`=? WHERE `email`=?";
 	public $placeAnOrder="INSERT INTO `order`(`uid`, `gid`, `isPaid`, `cid`, `expressFee`) VALUES (?,?,?,?,?)";
-	//gid=goodsID cid=courierID信使,陪送者
+	//gid=goodsID,cid=courierID信使,陪送者
 	public $undoPlaceOrder="DELETE FROM `order` WHERE `oid`=?";
 	public $assignCourier="UPDATE `order` SET `cid`=? WHERE `oid`=?";
 	public $assignFee="UPDATE `order` SET `expressFee`=? WHERE `oid`=?";
@@ -449,7 +449,7 @@ class acceptOrder extends pdoOperation{
 		return $this->submitQuery($this->acceptOrder,array($uid,$oid));}
 
 	function undo($uid,$oid){
-		return $this-?submitQuery($this->acceptOrder,array($uid,$oid));}
+		return $this->submitQuery($this->acceptOrder,array($uid,$oid));}
 }
 
 try {
