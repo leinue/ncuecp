@@ -104,9 +104,11 @@ class pdoOperation{
 	public $changePassword="UPDATE `profile` SET `password`=? WHERE `email`=?";
 	public $checkOldpw="SELECT `uid` FROM `profile` WHERE `email`=? AND `password`=SHA1(?)";
 	public $editProfile="UPDATE `profile` SET `userName`=?,`sex`=?,`university`=?,`college`=?,`flat`=?,`contact`=? WHERE `email`=?";
-
 	public $placeAnOrder="INSERT INTO `order`(`uid`, `gid`, `isPaid`, `cid`, `expressFee`) VALUES (?,?,?,?,?)";
-	//gid=goodsID cid=courierID
+	//gid=goodsID cid=courierID信使,陪送者
+	public $undoPlaceOrder="DELETE FROM `order` WHERE `oid`=?";
+	public $pushGoods="INSERT INTO `goods`(`sid`, `price`, `remarks`) VALUES (?,?,?)";//sid-supplierID
+	public $popGoods="DELETE FROM `goods` WHERE `gid`=?";
 
 	protected static $pdo;
 	
@@ -366,6 +368,7 @@ class profileMgr extends pdoOperation{
 /**
 * order类
 * @place()函数执行下订单操作,数组参数$orderInfo元素顺序为uid,gid,isPaid,cid,expressFee
+* @undo()函数将撤销一个订单,撤销成功返回true,撤销失败返回false
 */
 class order extends pdoOperation{
 	
@@ -381,22 +384,36 @@ class order extends pdoOperation{
 		$this->submitQuery($this->placeAnOrder,$orderInfo);
 	}
 
-	function undo(){
-
-	}
+	function undo($oid){//oid=orderID
+		return $this->submitQuery($this->undoPlaceOrder,array($oid));}
 }
 
 /**
 * goods类
+* @push()将一个商品压入仓库,成功返回true,失败返回false,数组参数顺序为sid(supplierID),price,remarks
+* @pop()删除一个商品,成功返回true,失败返回false
 */
 class goods extends pdoOperation{
 	
-	function push(){
-
+	function push($arr){
+		if(count($arr)!=3){
+			throw new Exception("arr must contain 3 elements.", 1);
+			return;
+		}
+		$this->submitQuery($this->pushGoods,$arr);
 	}
 
-	function pop(){
-		
+	function pop($gid){
+		return $this->submitQuery($this->popGoods,array($gid));}
+}
+
+/**
+* supplier类
+*/
+class supplier extends pdoOperation{
+	
+	function __construct(){
+		# code...
 	}
 }
 
