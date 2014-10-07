@@ -105,6 +105,9 @@ class pdoOperation{
 	public $checkOldpw="SELECT `uid` FROM `profile` WHERE `email`=? AND `password`=SHA1(?)";
 	public $editProfile="UPDATE `profile` SET `userName`=?,`sex`=?,`university`=?,`college`=?,`flat`=?,`contact`=? WHERE `email`=?";
 
+	public $placeAnOrder="INSERT INTO `order`(`uid`, `gid`, `isPaid`, `cid`, `expressFee`) VALUES (?,?,?,?,?)";
+	//gid=goodsID cid=courierID
+
 	protected static $pdo;
 	
 	function __construct($pdo){
@@ -344,7 +347,6 @@ class profileMgr extends pdoOperation{
 		return $this->fetchOdd($this->checkOldpw,array($this->email,$oldpw));}
 
 	function editProfile($arr){
-		//`userName`=?,`sex`=?,`university`=?,`college`=?,`flat`=?,`contact`=?
 		if(!is_array($arr)){
 			throw new Exception("parameter arr must be an array", 1);
 			return;
@@ -356,6 +358,46 @@ class profileMgr extends pdoOperation{
 		return $this->submitQuery($this->editProfile,$arr);
 	}
 
+	function isExist(){
+		return $this->fetchOdd($this->loadEmail,array($this->email));}
+
+}
+
+/**
+* order类
+* @place()函数执行下订单操作,数组参数$orderInfo元素顺序为uid,gid,isPaid,cid,expressFee
+*/
+class order extends pdoOperation{
+	
+	function place($orderInfo){
+		if(!is_array($orderInfo)){
+			throw new Exception("orderInfo must be an array", 1);
+			return;
+		}
+		if(count($orderInfo!=5)){
+			throw new Exception("orderInfo must contain 5 elements", 1);
+			return;
+		}
+		$this->submitQuery($this->placeAnOrder,$orderInfo);
+	}
+
+	function undo(){
+
+	}
+}
+
+/**
+* goods类
+*/
+class goods extends pdoOperation{
+	
+	function push(){
+
+	}
+
+	function pop(){
+		
+	}
 }
 
 try {
