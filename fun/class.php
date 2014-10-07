@@ -103,7 +103,7 @@ class pdoOperation{
 	public $changePicture="UPDATE `profile` SET `face`=? WHERE `email`=?";
 	public $changePassword="UPDATE `profile` SET `password`=? WHERE `email`=?";
 	public $checkOldpw="SELECT `uid` FROM `profile` WHERE `email`=? AND `password`=SHA1(?)";
-	public $editProfile="";
+	public $editProfile="UPDATE `profile` SET `userName`=?,`sex`=?,`university`=?,`college`=?,`flat`=?,`contact`=? WHERE `email`=?";
 
 	protected static $pdo;
 	
@@ -318,6 +318,7 @@ class login extends pdoOperation{
 * @changeHeas()用来修改头像,更换成功返回true,更换失败返回false
 * @changePassword()用来修改密码,成功返回true,失败返回false,旧密码与数据库不吻合返回-1
 * @checkOldpw()用来验证旧密码是否与数据库里的数据吻合,吻合返回true,不吻合返回false
+* @editProfile()用来修改用户资料,数组参数$arr的元素顺序为userNmae,sex,university,college,flat,contact
 */
 class profileMgr extends pdoOperation{
 
@@ -343,6 +344,7 @@ class profileMgr extends pdoOperation{
 		return $this->fetchOdd($this->checkOldpw,array($this->email,$oldpw));}
 
 	function editProfile($arr){
+		//`userName`=?,`sex`=?,`university`=?,`college`=?,`flat`=?,`contact`=?
 		if(!is_array($arr)){
 			throw new Exception("parameter arr must be an array", 1);
 			return;
