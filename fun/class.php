@@ -20,6 +20,8 @@ class pdoOperation{
 	public $addNewUser="INSERT INTO `profile`(`userName`, `password`, `email`, `isValid`, `lastLoginTime`, `ip`, `face`, `sex`, `university`, `college`, `flat`, `returnVisit`, `contact`) 
 	VALUES (?,SHA1(?),?,'0',?,?,'user/default.jpg','boy','南昌大学','南昌大学新闻与传播学院','000000','0','暂无')";
 	public $userEnter="SELECT * FROM `profile` WHERE `email`=? and `password`=SHA1(?)";
+	public $updateLoginInfo="UPDATE `profile` SET `lastLoginTime`=?,`ip`=concat(`ip`,?) WHERE `email`=?";
+	public $updateProfile="";
 
 	protected static $pdo;
 	
@@ -196,6 +198,12 @@ class register extends pdoOperation{
 * 用户登录类 
 * @enter()在验证成功后返回包含用户信息的类
 * @enter()返回-1表示邮箱重复,返回-2表示邮箱不合法,返回-3表示密码不合法
+* @update()用来更新用户登录后的lastLoginTime和ip数据
+* *************************************************************************
+* $log=new login($pdo);
+* if($a=$log->enter("123@qq.com","123456")){
+*	echo $a->getUserName();
+* }
 */
 class login extends pdoOperation{
 	
@@ -204,10 +212,20 @@ class login extends pdoOperation{
 		$fix=$cv->test($email);
 		if($cv->emailIsValid($fix)){
 			if($cv->pwIsValid($password)){
-				return $this->fetchClassQuery($this->userEnter,array($email,$password),'user');
+				$re=$this->fetchClassQuery($this->userEnter,array($email,$password),'user');
+				$up=$this->update($email);
+				if($re && $up){
+					return $re;
+				}
 			}else{return -3;}
 		}else{return -2;}
 	}
+
+	private function update($email){
+		date_default_timezone_set("Etc/GMT+8");
+		$nowTime=date('Y-m-d H:i:s',time());
+		$uip="|".getIp();
+		return $this->submitQuery($this->updateLoginInfo,array($nowTime,$uip,$email));}
 }
 
 try {
@@ -222,8 +240,9 @@ try {
 //$cv=new characterVerification($pdo);
 //print_r($cv->emailIsExist($cv->test("123@qq.com")));
 
-$log=new login($pdo);
+/*$log=new login($pdo);
 if($a=$log->enter("123@qq.com","123456")){
- echo $a->getUid();
-}
+	echo $a->getUserName();
+}*/
+
 ?>
