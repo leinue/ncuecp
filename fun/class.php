@@ -5,6 +5,84 @@ require('functions.php');
 require('tableObj.php');
 
 /**
+* 上传图片类
+*/
+class uploadPic{
+
+	function upload(
+		$max_file_size=2000000,$destination_folder,$formname){
+ 		 //上传文件类型列表
+		$uptypes=array(
+   		'image/jpg',
+    	'image/jpeg',
+   		'image/png',
+    	'image/pjpeg',
+    	'image/gif',
+    	'image/bmp',
+    	'image/x-png'
+		);
+
+		if ($_SERVER['REQUEST_METHOD'] == 'POST'){
+   			if (!is_uploaded_file($_FILES[$formname]["tmp_name"])){
+         		//图片不存在
+         		return -1;
+         		exit;
+    		}
+
+    		$file = $_FILES[$formname];
+   			if($max_file_size < $file["size"]){
+        		//文件太大!
+        		return -2;
+        		exit;
+    		}
+
+    		if(!in_array($file["type"], $uptypes)){
+        		//文件类型不符!".$file["type"]
+        		return -3;
+        		exit;
+    		}
+
+    		if(!file_exists($destination_folder)){
+        		mkdir($destination_folder);
+    		}
+
+    		$filename=$file["tmp_name"];
+    		$image_size = getimagesize($filename);
+    		$pinfo=pathinfo($file["name"]);
+    		$ftype=$pinfo['extension'];
+    		$destination = $destination_folder.time().".".$ftype;//文件名
+    		if (file_exists($destination) && $overwrite != true){
+        		//同名文件已经存在了
+        		return -4;
+        		exit;
+    		}
+
+    		if(!move_uploaded_file ($filename, $destination)){
+        		//移动文件出错
+        		return -5;
+        		exit;
+    		}
+
+    		$pinfo=pathinfo($destination);
+    		$fname=$pinfo[basename];
+
+    		/*$final_data=array(
+      		"dest" => $destination_folder.$fname,
+      		"width" => $image_size[0],
+      		"height" => $image_size[1],
+      		);*/
+
+    		return $destination_folder.$fname;
+    		//echo " <font color=red>已经成功上传</font><br>文件名:  <font color=blue>".$destination_folder.$fname."</font><br>";
+    		//echo " 宽度:".$image_size[0];
+    		//echo " 长度:".$image_size[1];
+    		//echo "<br> 大小:".$file["size"]." bytes";
+		}
+
+	}
+}
+
+/**
 * class pdoOperation
 * 用于封装查询语句时的必须查询过程
 * @submitQuery()使用pdo的预处理语句进行查询,比较安全
@@ -22,6 +100,7 @@ class pdoOperation{
 	public $userEnter="SELECT * FROM `profile` WHERE `email`=? and `password`=SHA1(?)";
 	public $updateLoginInfo="UPDATE `profile` SET `lastLoginTime`=?,`ip`=concat(`ip`,?) WHERE `email`=?";
 	public $updateProfile="";
+	public $changePicture="UPDATE `profile` SET `face`=? WHERE `email`=?";
 
 	protected static $pdo;
 	
@@ -226,6 +305,17 @@ class login extends pdoOperation{
 		$nowTime=date('Y-m-d H:i:s',time());
 		$uip="|".getIp();
 		return $this->submitQuery($this->updateLoginInfo,array($nowTime,$uip,$email));}
+}
+
+/**
+* 个人资料管理类
+* @changeHeas()用来修改头像,更换成功返回true,更换失败返回false
+*/
+class profileMgr extends pdoOperation{
+	
+	function changeHeas($pic,$email){
+		return $this->submitQuery($this->changePicture,array($pic,$email));
+	}
 }
 
 try {
