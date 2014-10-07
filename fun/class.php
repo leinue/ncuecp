@@ -107,8 +107,10 @@ class pdoOperation{
 	public $placeAnOrder="INSERT INTO `order`(`uid`, `gid`, `isPaid`, `cid`, `expressFee`) VALUES (?,?,?,?,?)";
 	//gid=goodsID cid=courierID信使,陪送者
 	public $undoPlaceOrder="DELETE FROM `order` WHERE `oid`=?";
-	public $pushGoods="INSERT INTO `goods`(`sid`, `price`, `remarks`) VALUES (?,?,?)";//sid-supplierID
+	public $pushGoods="INSERT INTO `goods`(`sid`, `price`, `remarks`) VALUES (?,?,?)";//sid=supplierID
 	public $popGoods="DELETE FROM `goods` WHERE `gid`=?";
+	public $insertSupplier="INSERT INTO `supplier`( `name`, `location`, `master`, `contact`) VALUES (?,?,?,?)";
+	public $delSupplier="DELETE FROM `supplier` WHERE `sid`=?";//sid=supplierID
 
 	protected static $pdo;
 	
@@ -363,6 +365,10 @@ class profileMgr extends pdoOperation{
 	function isExist(){
 		return $this->fetchOdd($this->loadEmail,array($this->email));}
 
+	function delUser(){
+
+	}
+
 }
 
 /**
@@ -409,12 +415,20 @@ class goods extends pdoOperation{
 
 /**
 * supplier类
+* @insert()函数插入一个新的商品提供者,成功返回true,失败返回false.数组参数顺序为name,location,master,contact
 */
 class supplier extends pdoOperation{
 	
-	function __construct(){
-		# code...
+	function insert($arr){
+		if(count($arr)!=4){
+			throw new Exception("arr must contain 4 elements", 1);
+			return;
+		}
+		return $this->submitQuery($this->insertSupplier,$arr);
 	}
+
+	function del($sid){
+		return $this->submitQuery($this->delSupplier,array($sid));}
 }
 
 try {
