@@ -107,6 +107,8 @@ class pdoOperation{
 	public $placeAnOrder="INSERT INTO `order`(`uid`, `gid`, `isPaid`, `cid`, `expressFee`) VALUES (?,?,?,?,?)";
 	//gid=goodsID cid=courierID信使,陪送者
 	public $undoPlaceOrder="DELETE FROM `order` WHERE `oid`=?";
+	public $assignCourier="UPDATE `order` SET `cid`=? WHERE `oid`=?";
+	public $assignFee="UPDATE `order` SET `expressFee`=? WHERE `oid`=?";
 	public $pushGoods="INSERT INTO `goods`(`sid`, `price`, `remarks`) VALUES (?,?,?)";//sid=supplierID
 	public $popGoods="DELETE FROM `goods` WHERE `gid`=?";
 	public $insertSupplier="INSERT INTO `supplier`( `name`, `location`, `master`, `contact`) VALUES (?,?,?,?)";
@@ -392,6 +394,12 @@ class order extends pdoOperation{
 
 	function undo($oid){//oid=orderID
 		return $this->submitQuery($this->undoPlaceOrder,array($oid));}
+
+	function assignCourier($uid,$oid){
+		return $this->submitQuery($this->assignCourier,array($uid,$oid));}
+
+	function assignFee($fee,$oid){
+		return $this->submitQuery($this->assignFee,array($fee,$oid));}
 }
 
 /**
