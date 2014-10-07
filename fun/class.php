@@ -113,6 +113,8 @@ class pdoOperation{
 	public $popGoods="DELETE FROM `goods` WHERE `gid`=?";
 	public $insertSupplier="INSERT INTO `supplier`( `name`, `location`, `master`, `contact`) VALUES (?,?,?,?)";
 	public $delSupplier="DELETE FROM `supplier` WHERE `sid`=?";//sid=supplierID
+	public $acceptOrder="INSERT INTO `orderlog`(`uid`, `oid`) VALUES (?,?)";
+	public $unAcceptOrder="DELETE FROM `orderlog` WHERE `uid`=? and `oid`=?";
 
 	protected static $pdo;
 	
@@ -437,6 +439,17 @@ class supplier extends pdoOperation{
 
 	function del($sid){
 		return $this->submitQuery($this->delSupplier,array($sid));}
+}
+
+/**
+* accept order
+*/
+class acceptOrder extends pdoOperation{
+	function accept($uid,$oid){
+		return $this->submitQuery($this->acceptOrder,array($uid,$oid));}
+
+	function undo($uid,$oid){
+		return $this-?submitQuery($this->acceptOrder,array($uid,$oid));}
 }
 
 try {
