@@ -455,7 +455,7 @@ class acceptOrder extends pdoOperation{
 		return $this->submitQuery($this->acceptOrder,array($uid,$oid));}
 }
 
-try {
+/*try {
 	$pdo=new PDO("mysql:dbname=$dbname;host=$host",$user,$password);
 } catch (PDOException $e) {
 	echo $e->getMessage();
