@@ -118,6 +118,10 @@ class pdoOperation{
 	public $delBook="DELETE FROM `oldbooks` WHERE `bid`=?";
 	public $orderBooks="INSERT INTO `booksorder`( `bid`, `purchaser`,`guestbook`, `isPaid`, `method`) VALUES (?,?,?,?,?)";//method只能有offline和online两种状态
 	public $undoOrderBooks="DELETE FROM `booksorder` WHERE `boid`=?";
+	public $addOrderLog="INSERT INTO `orderlog`(`uid`, `oid`) VALUES (?,?)";
+	public $delOrderLog="DELETE FROM `orderlog` WHERE `lid`=?";
+	public $addOrderForm="INSERT INTO `orderform`(`lid`, `uidLaunch`, `uidAccept`) VALUES (?,?,?)";
+	public $delOrderForm="DELETE FROM `orderform` WHERE `fid`=?";
 
 	protected static $pdo;
 	
@@ -475,6 +479,29 @@ class orderBook extends pdoOperation{
 
 	function undo($boid){
 		return $this->submitQuery($this->undoOrderBooks,array($boid));}
+}
+
+/**
+* order log
+*/
+class orderLog extends pdoOperation{
+
+	function add($uid,$oid){
+		return $this->submitQuery($this->addOrderLog,array($uid,$oid));}
+
+	function del($lid){
+		return $this->submitQuery($this->delOrderLog,array($lid));}
+}
+
+/**
+* order form
+*/
+class orderForm{
+	function add($lid,$uidLaunch,$uidAccept){
+		return $this->submitQuery($this->addOrderForm,array($lid,$uidLaunch,$uidAccept));}
+
+	function del($fid){
+		return $this->submitQuery($this->delOrderForm,array($fid));}
 }
 
 /*try {
