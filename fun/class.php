@@ -455,6 +455,28 @@ class acceptOrder extends pdoOperation{
 		return $this->submitQuery($this->acceptOrder,array($uid,$oid));}
 }
 
+/**
+* z增加书目类
+*/
+class addBook extends pdoOperation{
+	function add($name,$isbn,$editor,$publicTime,$remarks,$pic,$price){
+		return $this->submitQuery($this->addBook,array($name,$isbn,$editor,$publicTime,$remarks,$pic,$price));}
+
+	function del($bid){
+		return $this->submitQuery($this->delBook,array($bid));}
+}
+
+/**
+* 买书类
+*/
+class orderBook extends pdoOperation{
+	function order($bid,$purchaser,$guestbook,$isPaidm,$method){
+		return $this->submitQuery($this->orderBooks,array($bid,$purchaser,$guestbook,$isPaidm,$method));}
+
+	function undo($boid){
+		return $this->submitQuery($this->undoOrderBooks,array($boid));}
+}
+
 /*try {
 	$pdo=new PDO("mysql:dbname=$dbname;host=$host",$user,$password);
 } catch (PDOException $e) {
