@@ -80,7 +80,7 @@ function createTable(){
 			`_from` int NOT NULL, 
 			`_to` int NOT NULL, 
 			`content` TEXT NOT NULL, 
-			`datetime` TEXT NOT NULL, 
+			`datetime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
 			`isread` enum('y','n') NOT NULL, 
 			PRIMARY KEY (`mid`) )DEFAULT CHARSET=utf8;",
 		"msgMonitor"=>"CREATE TABLE msgMonitor( 

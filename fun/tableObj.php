@@ -51,4 +51,31 @@ class user{
 	function getContact(){return $this->contact;}
 }
 
+/**
+* 
+*/
+class msgObj{
+	
+	private $mid;
+	private $_from;
+	private $_to;
+	private $content;
+	private $datetime;
+	private $isread;
+
+	function getMid(){return $this->mid;}
+
+	function getFrom(){return $this->_from;}
+
+	function getTo(){return $this->to;}
+
+	function getContent(){return $this->content;}
+
+	function getTIme(){return $this->datetime;}
+
+	function isRead(){return $this->isread;}
+
+
+}
+
 ?>

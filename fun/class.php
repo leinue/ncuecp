@@ -123,6 +123,13 @@ class pdoOperation{
 	public $addOrderForm="INSERT INTO `orderform`(`lid`, `uidLaunch`, `uidAccept`) VALUES (?,?,?)";
 	public $delOrderForm="DELETE FROM `orderform` WHERE `fid`=?";
 
+	//*********************站内私信***************************
+
+	public $sendMsg="INSERT INTO `msg`(`_from`, `_to`, `content`, `isread`) VALUES (?,?,?,?)";
+	public $receiveMsg="SELECT  `content`, `datetime`, `isread` FROM `msg` WHERE `_from`=? and `_to`=?";
+	public $checkIsRead="SELECT `isread` FROM `msg` WHERE `_from`=? and `_to`=? and `content`=?";
+	public $markRead="UPDATE `msg` SET `isread`='y' WHERE `_from`=? and `_to`=? and `content`=?";
+
 	protected static $pdo;
 	
 	function __construct($pdo){
@@ -496,12 +503,35 @@ class orderLog extends pdoOperation{
 /**
 * order form
 */
-class orderForm{
+class orderForm extends pdoOperation{
 	function add($lid,$uidLaunch,$uidAccept){
 		return $this->submitQuery($this->addOrderForm,array($lid,$uidLaunch,$uidAccept));}
 
 	function del($fid){
 		return $this->submitQuery($this->delOrderForm,array($fid));}
+}
+
+/**
+* message
+*/
+class msgMgr extends pdoOperation{
+	private $from;
+	private $to;
+	private $content;
+
+	function ini($from,$to){
+		$this->from=$from;
+		$This->to=$to;
+	}
+
+	function send($content){
+		return $this->submitQuery($this->sendMsg,array($this->from,$this->to,$content));}
+
+	function receive(){
+		return $this->fetchClassQuery($this->receiveMsg,array($this->from,$this->to),'msgObj');}
+
+	function isRead($content){
+		return $this->fetchOdd($this->checkIsRead,array($this->from,$this->to,$content));}
 }
 
 /*try {
