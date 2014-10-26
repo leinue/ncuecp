@@ -544,7 +544,7 @@ class msgMgr extends pdoOperation{
 //echo $regin->reg(array("233","123456","123@qq.com"));
 
 //$cv=new characterVerification($pdo);
-//print_r($cv->emailIsExist($cv->test("123@qq.com")));
+print_r($cv->emailIsExist($cv->test("123@qq.com")));
 
 /*$log=new login($pdo);
 if($a=$log->enter("123@qq.com","123456")){
