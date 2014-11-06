@@ -540,7 +540,7 @@ class msgMgr extends pdoOperation{
 	echo $e->getMessage();
 }
 
-$regin=new register($pdo);
+//$regin=new register($pdo);
 //echo $regin->reg(array("233","123456","123@qq.com"));
 
 //$cv=new characterVerification($pdo);
